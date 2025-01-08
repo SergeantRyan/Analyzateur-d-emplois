@@ -1,31 +1,49 @@
 from tkinter import *
 from Calendrier import *
 from tkinter import filedialog
-from distutils.core import setup
-
-required={"icalendar", "pyinstaller"}
-'''
-myLabel1 = Label(root, text="Licence 1")
-myLabel2 = Label(root, text="Licence 2")
-myLabel1.grid(row=0,column=0)
-myLabel2.grid(row=0,column=1)
-'''
 
 global tableau
 
-
-def texteEmploi(tableau):
-    return "\nTotale: "+str(tableau[1][0])+" Heures, "+str(tableau[1][1])+" Minutes\n\nTP: "+str(tableau[1][2])+" Heures, "+str(tableau[1][3])+" Minutes : "+str(tableau[0][0])+"%\n\nTD : "+str(tableau[1][4])+" Heures, "+str(tableau[1][5])+" Minutes : "+str(tableau[0][1])+"%\n\nCM : "+str(tableau[1][6])+" Heures, "+str(tableau[1][7])+" Minutes : "+str(tableau[0][2])+"%\n\n"
-
-def texteSalle(tableau):
-    ch="\n"
-    n=len(tableau[1])
-    for i in range(n):
-        if tableau[0][i]=="":
-            add="INCONNU : "+str(tableau[1][i])+"% , "+str(tableau[2][i])+", "+str(tableau[3][i][0])+" Heures\n\n"
+def texteEmploi(D):
+    ch=""
+    s=0
+    p=pourcentages(D)
+    th,tm=conversion(sum(D[j] for j in D))
+    for i in D:
+        heures,minutes=conversion(D[i])
+        if minutes:
+            ch+=i+f": {heures}h {minutes}m ({p[i]}%)\n\n"
         else:
-            add=str(tableau[0][i])+" : "+str(tableau[1][i])+"% , "+str(tableau[2][i])+", "+str(tableau[3][i][0])+" Heures\n\n"
-        ch+=add
+            ch+=i+f": {heures}h ({p[i]}%)\n\n"
+    if tm:
+        ch+=f"Total: {th}h {tm}m"
+    else:
+        ch+=f"Total: {th}h"
+    return ch
+
+def texteSalle(matieres,proportions,profs,minutes):
+    ch="\n"
+    tm=0
+    for code in matieres:
+        matiere=matieres[code]
+        c=minutes[matiere]
+        h,m=conversion(c)
+        tm+=c
+        if code=="":
+            if m!=0:
+                ch+=f"INCONNU - {matiere}, {profs[matiere]} - {h}h {m}m ({proportions[matiere]}%)\n\n"
+            else:
+                ch+=f"INCONNU - {matiere}, {profs[matiere]} - {h}h ({proportions[matiere]}%)\n\n"  
+        else:
+            if m!=0:
+                ch+=f"{code} - {matiere}, {profs[matiere]} - {h}h {m}m ({proportions[matiere]}%)\n\n"
+            else:
+                ch+=f"{code} - {matiere}, {profs[matiere]} - {h}h ({proportions[matiere]}%)\n\n"
+    h,m=conversion(tm)
+    if m!=0:
+        ch+=f"Total: {h}h {m}m"
+    else:
+        ch+=f"Total: {h}h"
     return ch
 
 def openEDT():
@@ -40,25 +58,9 @@ def openEDT():
 def openSalle():
     filepath=filedialog.askopenfilename()
     if ".ics" in filepath:
-        tableau=lire_salle(filepath)
-        resultatSalle.set(texteSalle(tableau))
-        print(tableau)
+        matieres,proportions,profs,minutes=lire_salle(filepath)
+        resultatSalle.set(texteSalle(matieres,proportions,profs,minutes))
 
-'''
-def afficherL1():
-    texte=lire("c:/Users/TideP/Downloads/ADECal_L1INFO.ics")
-    resultat.set(str(texte))
-
-def afficherL2():
-    texte=lire("c:/Users/TideP/Downloads/ADECal_L2INFO.ics")
-    resultat.set(str(texte))
-
-def afficherL3():
-    texte=lire("c:/Users/TideP/Downloads/ADECal_L3INFO.ics")
-    resultat.set(str(texte))
-'''
-
-#installer(required)
 root = Tk()
 root.title("Logiciel Licence Informatique Champollion")
 
@@ -72,15 +74,6 @@ boutonsLabelFrame.grid(row=0,column=0)
 
 boutonFichier=Button(boutonsLabelFrame,text="Importer un Fichier", padx=30,pady=5, command=openEDT)
 boutonFichier.grid(row=0,column=0)
-
-'''
-boutonL1=Button(boutonsLabelFrame, text="L1 Info", padx=75,pady=25, command=afficherL1)
-boutonL1.grid(row=0,column=1)
-boutonL2=Button(boutonsLabelFrame, text="L2 Info",padx=75,pady=25, command=afficherL2)
-boutonL2.grid(row=0,column=2)
-boutonL3=Button(boutonsLabelFrame, text="L3 Info",padx=75,pady=25, command=afficherL3)
-boutonL3.grid(row=0,column=3)
-'''
 
 graphicFrame=LabelFrame(boutonsFrame, text="Affichage")
 graphicFrame.grid(row=1,column=0)

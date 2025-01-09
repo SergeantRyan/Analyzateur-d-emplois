@@ -186,6 +186,3 @@ def lire_salle(nom_fichier):
     Calendrier = Calendar.from_ical(g.read())
     L = Calendrier.walk()[1:]
     return parcoursSalles(L)
-
-t=lire_salle("C:/Users/TideP/Downloads/ADECal_SalleEL107_semaine9-12.ics")
-print(t)
